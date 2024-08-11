@@ -1,0 +1,47 @@
+name: structure
+version: 1.0.0
+description: Made by StarJ
+main: shining.starj.lostSurvival.Core
+api-version: 1.20
+author: StarJ
+
+commands:
+  item:
+    description: "전용 아이템을 제공하는 명령어"
+    usage: "/item [player] [item] (count)"
+    aliases: [i]
+    operator: admin
+  sudo:
+    description: "명령어를 강제로 시키는 명령어"
+    usage: "/sudo [player] [..args]"
+    operator: admin
+  permission:
+    description: "퍼미션 명령어"
+    usage: "/permission [player] add [permission] (ticks)\n/permission [player] remove [permission]"
+    aliases: [p]
+    operator: admin
+  worldmove:
+    description: "웓드 이동 명령어"
+    usage : "/wm [player] [world_name]"
+    aliases: [wm]
+    operator: admin
+libraries:
+  - 'com.h2database:h2:2.2.220'
+preset:
+  commands:
+    test:
+      description: "테스트"
+      usage: "/test"
+      operator: admin
+      aliases: [ t,tes ]
+      permission: test.T
+      permission-message: You do not have permission to use this command.
+  permissions:
+    test.T:
+      description: "Allows you to use the command /test"
+      default: true
+    test.*:
+      description: Wildcard permission
+      default: op
+      children:
+        test.foo: true

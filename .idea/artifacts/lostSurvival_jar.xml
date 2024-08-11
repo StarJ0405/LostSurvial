@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="lostSurvival:jar">
+    <output-path>$PROJECT_DIR$/../../Minecraft/LostSurvival/plugins</output-path>
+    <root id="archive" name="lostSurvival.jar">
+      <element id="file-copy" path="$PROJECT_DIR$/src/main/resources/plugin.yml" />
+      <element id="module-output" name="lostSurvival" />
+    </root>
+  </artifact>
+</component>
