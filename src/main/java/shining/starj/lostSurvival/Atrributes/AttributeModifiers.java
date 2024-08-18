@@ -1,6 +1,5 @@
 package shining.starj.lostSurvival.Atrributes;
 
-import lombok.Builder;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.attribute.AttributeModifier.Operation;
@@ -17,7 +16,7 @@ public class AttributeModifiers extends Attributes {
     protected final Operation operation;
     protected final EquipmentSlot slot;
 
-    @Builder
+
     public AttributeModifiers(Attribute attribute, double amount, UUID uuid, String name, Operation operation,
                               EquipmentSlot slot) {
         super(attribute, amount);
@@ -25,6 +24,55 @@ public class AttributeModifiers extends Attributes {
         this.name = name;
         this.operation = operation;
         this.slot = slot;
+    }
+
+    public static AttributeModifiersBuilder builder() {
+        return new AttributeModifiersBuilder();
+    }
+
+    public static class AttributeModifiersBuilder extends Attributes.AttributesBuilder {
+        protected Attribute attribute;
+        protected double amount;
+        protected UUID uuid;
+        protected String name;
+        protected Operation operation;
+        protected EquipmentSlot slot;
+
+        @Override
+        public AttributeModifiersBuilder attribute(Attribute attribute) {
+            this.attribute = attribute;
+            return this;
+        }
+
+        @Override
+        public AttributeModifiersBuilder amount(double amount) {
+            this.amount = amount;
+            return this;
+        }
+
+        public AttributeModifiersBuilder uuid(UUID uuid) {
+            this.uuid = uuid;
+            return this;
+        }
+
+        public AttributeModifiersBuilder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public AttributeModifiersBuilder operation(Operation operation) {
+            this.operation = operation;
+            return this;
+        }
+
+        public AttributeModifiersBuilder slot(EquipmentSlot slot) {
+            this.slot = slot;
+            return this;
+        }
+
+        public AttributeModifiers build() {
+            return new AttributeModifiers(attribute, amount, uuid, name, operation, slot);
+        }
     }
 
     private AttributeModifier getAttributeModifier() {
@@ -42,9 +90,13 @@ public class AttributeModifiers extends Attributes {
     }
 
     public void apply(ItemStack item) {
+        apply(item, false);
+    }
+
+    public void apply(ItemStack item, boolean force) {
         if (item != null) {
             ItemMeta meta = item.getItemMeta();
-            if (amount == 0)
+            if (amount == 0 && !force)
                 meta.removeAttributeModifier(this.attribute, getAttributeModifier());
             else
                 meta.addAttributeModifier(this.attribute, getAttributeModifier());

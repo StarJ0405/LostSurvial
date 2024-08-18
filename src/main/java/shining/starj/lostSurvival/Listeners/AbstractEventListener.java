@@ -28,6 +28,7 @@ public abstract class AbstractEventListener implements Listener {
         ItemInteractListener.builder().build();
         MessageListener.builder().build();
         PermissionListener.builder().build();
+        GameListener.builder().build();
         TargetSelectorListener.builder().build();
         TimerListener.builder().build();
     }

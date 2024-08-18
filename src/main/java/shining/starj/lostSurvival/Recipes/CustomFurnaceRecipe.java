@@ -22,6 +22,6 @@ public class CustomFurnaceRecipe extends CustomRecipe {
     }
 
     public static void initial() {
-        CustomFurnaceRecipe.builder().key("time").result(Items.timer.getItemStack()).choice(RecipeChoiceCreator.fromItemStack(Items.timer.getItemStack())).exp(0f).cookingTime(20).build();
+        CustomFurnaceRecipe.builder().key("time").result(Items.timer.getItemStack()).choice(RecipeChoiceCreator.fromItemStack(Items.timer.getItemStack())).exp(0f).cookingTime(5).build();
     }
 }

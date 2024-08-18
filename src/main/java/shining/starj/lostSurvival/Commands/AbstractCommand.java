@@ -2,10 +2,7 @@ package shining.starj.lostSurvival.Commands;
 
 import org.bukkit.command.*;
 import org.jetbrains.annotations.NotNull;
-import shining.starj.lostSurvival.Commands.Prework.ItemCommand;
-import shining.starj.lostSurvival.Commands.Prework.PermissionCommand;
-import shining.starj.lostSurvival.Commands.Prework.SudoCommand;
-import shining.starj.lostSurvival.Commands.Prework.WorldMoveCommand;
+import shining.starj.lostSurvival.Commands.Prework.*;
 import shining.starj.lostSurvival.Core;
 import shining.starj.lostSurvival.Exceptions.IncompleteCommandException;
 import shining.starj.lostSurvival.Exceptions.NoAuthorityException;
@@ -88,6 +85,7 @@ public abstract class AbstractCommand implements CommandExecutor, TabCompleter {
         new PermissionCommand();
         new ItemCommand();
         new WorldMoveCommand();
+        new SpawnCommand();
     }
 
 }

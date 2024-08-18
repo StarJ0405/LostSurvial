@@ -26,7 +26,7 @@ public abstract class AbstractTableInstance {
         try {
             Class.forName("org.h2.Driver");
             String jarPath = Core.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-            String fileLoc = (Core.getOsType().equals(OsType.Linux) ? "/":"")+ jarPath.substring(0, jarPath.lastIndexOf("/")).substring(1).replaceAll("%20", " ") + "/" + Core.getCore().getName() + "/db";
+            String fileLoc = (Core.getOsType().equals(OsType.Linux) ? "/" : "") + jarPath.substring(0, jarPath.lastIndexOf("/")).substring(1).replaceAll("%20", " ") + "/" + Core.getCore().getName() + "/db";
             String url = "jdbc:h2:" + fileLoc;
             File file = new File(fileLoc);
             if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
@@ -272,6 +272,7 @@ public abstract class AbstractTableInstance {
                         parameterValues[i++] = switch (cls.getTypeName()) {
                             case "int", "java.lang.Integer" ->
                                     (Integer) Integer.parseInt(parameters.get(cls).toString());
+                            case "long", "java.lang.Long" -> (Long) Long.parseLong(parameters.get(cls).toString());
                             case "double", "java.lang.Double" ->
                                     (Double) Double.parseDouble(parameters.get(cls).toString());
                             case "float", "java.lang.Float" -> (Float) Float.parseFloat(parameters.get(cls).toString());
@@ -350,6 +351,7 @@ public abstract class AbstractTableInstance {
                         parameterValues[i++] = switch (cls.getTypeName()) {
                             case "int", "java.lang.Integer" ->
                                     (Integer) Integer.parseInt(parameters.get(cls).toString());
+                            case "long", "java.lang.Long" -> (Long) Long.parseLong(parameters.get(cls).toString());
                             case "double", "java.lang.Double" ->
                                     (Double) Double.parseDouble(parameters.get(cls).toString());
                             case "float", "java.lang.Float" -> (Float) Float.parseFloat(parameters.get(cls).toString());
@@ -428,6 +430,7 @@ public abstract class AbstractTableInstance {
                         parameterValues[i++] = switch (cls.getTypeName()) {
                             case "int", "java.lang.Integer" ->
                                     (Integer) Integer.parseInt(parameters.get(cls).toString());
+                            case "long", "java.lang.Long" -> (Long) Long.parseLong(parameters.get(cls).toString());
                             case "double", "java.lang.Double" ->
                                     (Double) Double.parseDouble(parameters.get(cls).toString());
                             case "float", "java.lang.Float" -> (Float) Float.parseFloat(parameters.get(cls).toString());
@@ -475,6 +478,7 @@ public abstract class AbstractTableInstance {
                         parameterValues[i++] = switch (cls.getTypeName()) {
                             case "int", "java.lang.Integer" ->
                                     (Integer) Integer.parseInt(parameters.get(cls).toString());
+                            case "long", "java.lang.Long" -> (Long) Long.parseLong(parameters.get(cls).toString());
                             case "double", "java.lang.Double" ->
                                     (Double) Double.parseDouble(parameters.get(cls).toString());
                             case "float", "java.lang.Float" -> (Float) Float.parseFloat(parameters.get(cls).toString());
@@ -514,12 +518,13 @@ public abstract class AbstractTableInstance {
         return builder.toString();
     }
 
-    private void put(HashMap<Class<?>, Object> parameters, Field field, ResultSet rs) throws SQLException {
+    protected void put(HashMap<Class<?>, Object> parameters, Field field, ResultSet rs) throws SQLException {
         Class<?> key = field.getType();
         switch (field.getType().getName()) {
             case "java.lang.String", "char", "java.lang.Character" ->
                     parameters.put(key, rs.getString(field.getName()));
             case "int", "java.lang.Integer" -> parameters.put(key, rs.getInt(field.getName()));
+            case "long", "java.lang.Long" -> parameters.put(key, rs.getLong(field.getName()));
             case "double", "java.lang.Double" -> parameters.put(key, rs.getDouble(field.getName()));
             case "float", "java.lang.Float" -> parameters.put(key, rs.getFloat(field.getName()));
             case "boolean", "java.lang.Boolean" -> parameters.put(key, rs.getBoolean(field.getName()));
@@ -529,13 +534,14 @@ public abstract class AbstractTableInstance {
         ;
     }
 
-    private String getNameWithType(Field field) {
+    protected String getNameWithType(Field field) {
         String name = field.getName();
         String type = field.getType().getName();
         return switch (type) {
             case "java.lang.String" -> name + " VARCHAR(255)";
             case "char", "java.lang.Character" -> name + " CHAR(1)";
             case "int", "java.lang.Integer" -> name + " INTEGER";
+            case "long", "java.lang.Long" -> name + " BIGINT";
             case "double", "java.lang.Double" -> name + " Double";
             case "float", "java.lang.Float" -> name + " REAL";
             case "boolean", "java.lang.Boolean" -> name + " BOOLEAN";

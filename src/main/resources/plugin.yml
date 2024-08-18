@@ -25,6 +25,11 @@ commands:
     usage : "/wm [player] [world_name]"
     aliases: [wm]
     operator: admin
+  spawn:
+    description: "커스텀 몬스터 소환 명령어"
+    usage: "/s [type]\n/s [type] [world] [x] [y] [z]"
+    aliases: [s]
+    operator: admin
 libraries:
   - 'com.h2database:h2:2.2.220'
 preset:

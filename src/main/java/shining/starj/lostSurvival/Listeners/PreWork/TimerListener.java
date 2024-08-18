@@ -90,7 +90,6 @@ public class TimerListener extends AbstractEventListener {
         refillItems(block);
     }
 
-
     @EventHandler(priority = EventPriority.LOWEST)
     public void Event(FurnaceBurnEvent e) {
         Block block = e.getBlock();

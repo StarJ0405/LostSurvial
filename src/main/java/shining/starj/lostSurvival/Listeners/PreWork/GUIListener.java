@@ -7,7 +7,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import shining.starj.lostSurvival.Events.Prework.InventorySortEvent;
 import shining.starj.lostSurvival.GUIs.AbstractGUI;
 import shining.starj.lostSurvival.Listeners.AbstractEventListener;
 
@@ -37,13 +36,5 @@ public class GUIListener extends AbstractEventListener {
         AbstractGUI gui = AbstractGUI.getGUI(player);
         if (gui != null)
             e.setCancelled(gui.dragInventory(player, e.getView(), e.getOldCursor(), e.getCursor(), e.getType(), e.getInventorySlots(), e.getRawSlots(), e.getNewItems()));
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void Events(InventorySortEvent e) {
-        Player player = e.getPlayer();
-        AbstractGUI gui = AbstractGUI.getGUI(player);
-        if (gui != null)
-            e.setCancelled(gui.sortInventory(player, e.getView(), e.getInventory(), e.getSorted(), e.getInventoryType(), e.getRawSlot(), e.getSlot()));
     }
 }

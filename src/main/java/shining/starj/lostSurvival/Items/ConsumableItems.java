@@ -74,8 +74,8 @@ public class ConsumableItems extends Items {
         }
 
         @Override
-        public ConsumableItemsBuilder glint(boolean glint) {
-            return (ConsumableItemsBuilder) super.glint(glint);
+        public ConsumableItemsBuilder hideGlint(boolean glint) {
+            return (ConsumableItemsBuilder) super.hideGlint(glint);
         }
 
         @Override
@@ -120,7 +120,7 @@ public class ConsumableItems extends Items {
 
         @Override
         public ConsumableItems build() {
-            return new ConsumableItems(key, displayName, material, lores, model, interact, fireResistant, hideGlint, hideTooltip, unbreakable, maxStackSize, canAlwaysEat, eatSeconds, nutrition, saturation, foodEffectInfos);
+            return new ConsumableItems(key, displayName, material, lores, model, interact, fireResistant, glint, hideTooltip, unbreakable, maxStackSize, canAlwaysEat, eatSeconds, nutrition, saturation, foodEffectInfos);
         }
     }
 

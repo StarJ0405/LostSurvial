@@ -1,15 +1,12 @@
 package shining.starj.lostSurvival.Effects;
 
 import lombok.Getter;
-import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Transformation;
 import org.joml.Matrix4f;
 import shining.starj.lostSurvival.Core;
@@ -107,12 +104,12 @@ public class ItemDisplayControl {
     }
 
     public ItemDisplayControl setLiveTick(int second) {
-        display.setMetadata("live", new FixedMetadataValue(Core.getCore(), second));
+        display.getPersistentDataContainer().set(new NamespacedKey(Core.getCore(), "live"), PersistentDataType.INTEGER, second * 4);
         return this;
     }
 
     public ItemDisplayControl setLife(double seconds) { // 현재 시간 비례
-        display.setMetadata("life", new FixedMetadataValue(Core.getCore(), System.currentTimeMillis() + (long) (seconds * 1000)));
+        display.getPersistentDataContainer().set(new NamespacedKey(Core.getCore(), "life"), PersistentDataType.LONG, System.currentTimeMillis() + (long) (seconds * 1000));
         return this;
     }
 

@@ -20,7 +20,7 @@ public record ScoreCondition(@NotNull String name, @Nullable Integer min,
             int value = objective.getScore(player.getName()).getScore();
             return (min == null || value >= min) && (max == null || value <= max);
         } else {
-            Objective objective = ScoreboardStore.getScoreboard().getObjective(name);
+            Objective objective = ScoreboardStore.getInstance().getObjective(name);
             int value = objective.getScore(entity.getUniqueId().toString()).getScore();
             return (min == null || value >= min) && (max == null || value <= max);
         }

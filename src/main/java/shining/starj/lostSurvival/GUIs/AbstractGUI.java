@@ -13,7 +13,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import shining.starj.lostSurvival.Core;
-import shining.starj.lostSurvival.GUIs.Prework.BagGUI;
+
 
 import java.util.*;
 
@@ -25,7 +25,7 @@ public abstract class AbstractGUI {
     /*
      * 선언부
      */
-    public static BagGUI bagGUI = BagGUI.builder().key("bag").build();
+
     //
     protected final String key;
     protected final String title;
