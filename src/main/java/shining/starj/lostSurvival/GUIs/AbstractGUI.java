@@ -2,6 +2,8 @@ package shining.starj.lostSurvival.GUIs;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -13,7 +15,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import shining.starj.lostSurvival.Core;
-
+import shining.starj.lostSurvival.GUIs.Prework.*;
 
 import java.util.*;
 
@@ -25,7 +27,11 @@ public abstract class AbstractGUI {
     /*
      * 선언부
      */
-
+    public static final LevelUpGUI LEVEL_UP_GUI = new LevelUpGUI();
+    public static final SelectEngravingGUI SELECT_ENGRAVING_GUI = new SelectEngravingGUI();
+    public static final InfoGUI INFO_GUI = new InfoGUI();
+    public static final CharacterGUI CHARACTER_GUI = new CharacterGUI();
+    public static final UpgradeGUI UPGRADE_GUI = new UpgradeGUI();
     //
     protected final String key;
     protected final String title;
@@ -40,7 +46,7 @@ public abstract class AbstractGUI {
 
     public Inventory openInv(Player player) {
         openGUI.put(player.getUniqueId(), this.key);
-        Inventory inv = Bukkit.createInventory(player, inventorySize.getSize(), title);
+        Inventory inv = Bukkit.createInventory(player, inventorySize.getSize(), Component.text(title));
         player.openInventory(inv);
         return inv;
     }
@@ -49,7 +55,6 @@ public abstract class AbstractGUI {
 
     public abstract boolean dragInventory(Player player, InventoryView view, ItemStack oldCursorItemStack, ItemStack cursorItemstack, DragType type, Set<Integer> slot, Set<Integer> rawSlot, Map<Integer, ItemStack> newItems);
 
-    public abstract boolean sortInventory(Player player, InventoryView view, Inventory inventory, List<ItemStack> sorted, InventoryType inventoryType, int rawSlot, int slot);
 
     public void closeInv(Player player) {
         openGUI.remove(player.getUniqueId());
@@ -84,17 +89,28 @@ public abstract class AbstractGUI {
     }
 
     @Getter
-    @Builder
+    @Setter
     public static class PageInfo extends GUIInfo {
         private int nowPage;
-        private int maxPage;
+        private final int maxPage;
+
+        @Builder
+        public PageInfo(int maxPage) {
+            this.maxPage = maxPage;
+            this.nowPage = 0;
+        }
     }
 
     @Getter
     @Builder
     public static class VariableInfo extends GUIInfo {
-        private String title;
-        private InventorySize inventorySize;
+        protected final String title;
+        protected final InventorySize inventorySize;
+
+        public VariableInfo(String title, InventorySize inventorySize) {
+            this.title = title;
+            this.inventorySize = inventorySize;
+        }
     }
 
     public static void initial() {

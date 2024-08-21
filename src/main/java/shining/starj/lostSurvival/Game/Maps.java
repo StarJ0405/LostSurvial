@@ -17,7 +17,7 @@ public enum Maps {
 
     Maps(String name) {
         this.name = name;
-        this.world = WorldStore.name(name()).type(WorldType.FLAT).doTileDrops(false).doEntityDrops(false).emptyChunkGenerator().doDaylightCycle(false).doWeatherCycle(false).spawnRadius(0).doMobSpawning(false).doPatrolSpawning(false).doTraderSpawning(false).doWardenSpawning(false).doImmediateRespawn(true).naturalRegeneration(false).keepInventory(true).build();
+        this.world = WorldStore.name(name()).type(WorldType.FLAT).doTileDrops(false).doEntityDrops(false).emptyChunkGenerator().doDaylightCycle(false).doWeatherCycle(false).spawnRadius(0).doMobSpawning(false).doPatrolSpawning(false).doTraderSpawning(false).doWardenSpawning(false).doImmediateRespawn(true).naturalRegeneration(false).keepInventory(true).commandBlockOutput(false).build();
     }
 
 }

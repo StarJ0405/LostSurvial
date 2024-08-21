@@ -45,7 +45,7 @@ public class Core extends JavaPlugin {
         CustomEntities.values();
         //
         for (String name : new String[]{"world", "world_nether", "world_the_end"})
-            WorldStore.name(name).doDaylightCycle(false).doWeatherCycle(false).doTileDrops(false).doEntityDrops(false).spawnRadius(0).doMobSpawning(false).doPatrolSpawning(false).doTraderSpawning(false).doWardenSpawning(false).doImmediateRespawn(true).naturalRegeneration(false).keepInventory(true).build();
+            WorldStore.name(name).doDaylightCycle(false).doWeatherCycle(false).doTileDrops(false).doEntityDrops(false).spawnRadius(0).doMobSpawning(false).doPatrolSpawning(false).doTraderSpawning(false).doWardenSpawning(false).doImmediateRespawn(true).naturalRegeneration(false).keepInventory(true).commandBlockOutput(false).build();
         Maps.values();
         //
         Bukkit.getOnlinePlayers().forEach(player -> {
@@ -67,8 +67,8 @@ public class Core extends JavaPlugin {
 
     public void onDisable() {
         // 초기화
-        for (MessageStore.BoosBarInfo info : MessageStore.getBossBars())
-            info.bar().removeAll();
+        for (MessageStore.BossBarInfo info : MessageStore.getBossBars())
+            info.getBar().removeAll();
         // DB연결 종료
         AbstractTableInstance.disconnect();
         //

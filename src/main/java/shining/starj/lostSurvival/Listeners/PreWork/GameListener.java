@@ -16,7 +16,6 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryInteractEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -24,6 +23,7 @@ import org.bukkit.persistence.PersistentDataType;
 import shining.starj.lostSurvival.Core;
 import shining.starj.lostSurvival.Entities.CustomEntities;
 import shining.starj.lostSurvival.Events.Prework.TimerEvent;
+import shining.starj.lostSurvival.GUIs.AbstractGUI;
 import shining.starj.lostSurvival.Game.Character;
 import shining.starj.lostSurvival.Game.GameStatus;
 import shining.starj.lostSurvival.Game.GameStore;
@@ -34,18 +34,38 @@ import shining.starj.lostSurvival.Systems.ScoreboardStore;
 
 @Builder
 public class GameListener extends AbstractEventListener {
+    private int tick = 0;
+
     @EventHandler
     public void Events(TimerEvent e) {
         GameStore gameStore = GameStore.getInstance();
-        if (gameStore.getStatus().equals(GameStatus.START))
+        if (gameStore.getStatus().equals(GameStatus.START)) {
             for (Player player : gameStore.getPlayers())
                 if (player.getGameMode().equals(GameMode.ADVENTURE)) {
                     PlayerStore playerStore = PlayerStore.getStore(player);
-                    if (!playerStore.isDead())
+                    if (!playerStore.isDead()) {
                         for (SkillInfo skillInfo : playerStore.getSkillInfos())
-                            if (skillInfo != null)
-                                skillInfo.Use(player);
+                            if (skillInfo != null) skillInfo.Use(player);
+                        this.tick++;
+                        if (this.tick >= 4) {
+                            playerStore.heal(playerStore.getRegen());
+                            this.tick = 0;
+                        }
+                    }
                 }
+        } else if (gameStore.getStatus().equals(GameStatus.STOP)) {
+            int remain = gameStore.getRemain();
+            if (remain > 0) {
+                remain -= 1;
+                gameStore.setRemain(remain);
+                if (remain == 0)
+                    if (!AbstractGUI.SELECT_ENGRAVING_GUI.isClosed()) AbstractGUI.SELECT_ENGRAVING_GUI.choice();
+                    else {
+                        AbstractGUI.LEVEL_UP_GUI.choice();
+                        gameStore.setStatus(GameStatus.START);
+                    }
+            }
+        }
     }
 
     @EventHandler
@@ -58,15 +78,13 @@ public class GameListener extends AbstractEventListener {
     @EventHandler
     public void Events(BlockBreakEvent e) {
         Player player = e.getPlayer();
-        if (!player.getGameMode().equals(GameMode.CREATIVE))
-            e.setCancelled(true);
+        if (!player.getGameMode().equals(GameMode.CREATIVE)) e.setCancelled(true);
     }
 
     @EventHandler
     public void Events(BlockPlaceEvent e) {
         Player player = e.getPlayer();
-        if (!player.getGameMode().equals(GameMode.CREATIVE))
-            e.setCancelled(true);
+        if (!player.getGameMode().equals(GameMode.CREATIVE)) e.setCancelled(true);
     }
 
     @EventHandler
@@ -74,9 +92,12 @@ public class GameListener extends AbstractEventListener {
         Player player = e.getPlayer();
         if (!player.getGameMode().equals(GameMode.CREATIVE)) {
             e.setCancelled(true);
-            PlayerStore playerStore = PlayerStore.getStore(player);
-            if (playerStore.getCharacter() != null && playerStore.getUltimate() != null)
-                playerStore.getUltimate().Use(player);
+            GameStore gameStore = GameStore.getInstance();
+            if (gameStore.getStatus().equals(GameStatus.START) && player.getGameMode().equals(GameMode.ADVENTURE)) {
+                PlayerStore playerStore = PlayerStore.getStore(player);
+                if (!playerStore.isDead() && playerStore.getCharacter() != null && playerStore.getUltimate() != null)
+                    SkillInfo.Use(player, playerStore.getUltimate(), gameStore.getLevel());
+            }
         }
     }
 
@@ -85,9 +106,11 @@ public class GameListener extends AbstractEventListener {
         Player player = e.getPlayer();
         if (!player.getGameMode().equals(GameMode.CREATIVE)) {
             e.setCancelled(true);
-            PlayerStore playerStore = PlayerStore.getStore(player);
-            if (playerStore.getCharacter() != null && playerStore.getIdentity() != null) {
-                playerStore.getIdentity().Use(player);
+            GameStore gameStore = GameStore.getInstance();
+            if (gameStore.getStatus().equals(GameStatus.START) && player.getGameMode().equals(GameMode.ADVENTURE)) {
+                PlayerStore playerStore = PlayerStore.getStore(player);
+                if (!playerStore.isDead() && playerStore.getCharacter() != null && playerStore.getIdentity() != null)
+                    SkillInfo.Use(player, playerStore.getIdentity(), gameStore.getLevel());
             }
         }
     }
@@ -100,29 +123,19 @@ public class GameListener extends AbstractEventListener {
     @EventHandler
     public void Events(InventoryClickEvent e) {
         Player player = (Player) e.getWhoClicked();
-        if (!player.getGameMode().equals(GameMode.CREATIVE))
-            e.setCancelled(true);
+        if (!player.getGameMode().equals(GameMode.CREATIVE)) e.setCancelled(true);
     }
 
     @EventHandler
     public void Events(InventoryDragEvent e) {
         Player player = (Player) e.getWhoClicked();
-        if (!player.getGameMode().equals(GameMode.CREATIVE))
-            e.setCancelled(true);
+        if (!player.getGameMode().equals(GameMode.CREATIVE)) e.setCancelled(true);
     }
 
     @EventHandler
     public void Events(InventoryInteractEvent e) {
         Player player = (Player) e.getWhoClicked();
-        if (!player.getGameMode().equals(GameMode.CREATIVE))
-            e.setCancelled(true);
-    }
-
-    @EventHandler
-    public void Events(InventoryOpenEvent e) {
-        Player player = (Player) e.getPlayer();
-        if (!player.getGameMode().equals(GameMode.CREATIVE))
-            e.setCancelled(true);
+        if (!player.getGameMode().equals(GameMode.CREATIVE)) e.setCancelled(true);
     }
 
     @EventHandler
@@ -135,11 +148,16 @@ public class GameListener extends AbstractEventListener {
         if (gameStore.getStatus().equals(GameStatus.START)) {
             if (!gameStore.getPlayers().contains(player)) {
                 player.setGameMode(GameMode.SPECTATOR);
-                if (gameStore.getMap() != null)
-                    player.teleport(gameStore.getMap().getWorld().getSpawnLocation());
+                if (gameStore.getMap() != null) player.teleport(gameStore.getMap().getWorld().getSpawnLocation());
             }
         } else if (gameStore.getStatus().equals(GameStatus.END))
             player.teleport(Bukkit.getWorld("world").getSpawnLocation());
+    }
+
+    @EventHandler
+    public void Events(PlayerItemHeldEvent e) {
+        Player player = e.getPlayer();
+        if (!player.getGameMode().equals(GameMode.CREATIVE)) player.getInventory().setHeldItemSlot(0);
     }
 
     @EventHandler
@@ -149,8 +167,7 @@ public class GameListener extends AbstractEventListener {
 
     @EventHandler
     public void Events(EntitySpawnEvent e) {
-        if (e.getEntity() instanceof ExperienceOrb)
-            e.setCancelled(true);
+        if (e.getEntity() instanceof ExperienceOrb) e.setCancelled(true);
     }
 
     @EventHandler
@@ -168,8 +185,7 @@ public class GameListener extends AbstractEventListener {
             PlayerStore playerStore = PlayerStore.getStore(player);
             if (e.getCause().equals(EntityDamageEvent.DamageCause.VOID) || e.getCause().equals(EntityDamageEvent.DamageCause.KILL))
                 playerStore.kill();
-            else if (!e.getCause().equals(EntityDamageEvent.DamageCause.FALL))
-                playerStore.damage(e.getDamage());
+            else if (!e.getCause().equals(EntityDamageEvent.DamageCause.FALL)) playerStore.damage(e.getDamage());
             e.setCancelled(true);
         }
     }
@@ -205,17 +221,13 @@ public class GameListener extends AbstractEventListener {
         if (playerStore.getCharacter() == null) {
             playerStore.setCharacter(Character.REAPER);
 //            playerStore.setSkill(playerStore.getCharacter().getSkills()[Math.max(0, playerStore.getCharacter().getSkills().length - 1)]);
-//            List<AbstractSkill> list = new ArrayList<>(List.of(playerStore.getCharacter().getSkills()));
-//            Collections.shuffle(list);
-//            for (AbstractSkill skill : list)
-//                playerStore.setSkill(skill);
+//            playerStore.setSkill(AbstractSkill.ASSASSIN.REAPER.SHADOW_TRAP);
             player.setGameMode(GameMode.ADVENTURE);
             GameStore gameStore = GameStore.getInstance();
             gameStore.setStatus(GameStatus.START);
             gameStore.addPlayer(player);
             for (SkillInfo info : playerStore.getSkillInfos())
-                if (info != null && info.getSkill() != null)
-                    player.setCooldown(info.getSkill().getType(), 0);
+                if (info != null && info.getSkill() != null) player.setCooldown(info.getSkill().getType(), 0);
 
         }
     }

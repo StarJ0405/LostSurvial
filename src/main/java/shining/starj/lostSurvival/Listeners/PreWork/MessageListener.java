@@ -24,15 +24,22 @@ import java.util.UUID;
 public class MessageListener extends AbstractEventListener {
     @EventHandler
     public void Events(TimerEvent e) {
-        List<MessageStore.BoosBarInfo> list = MessageStore.getBossBars();
+        List<MessageStore.BossBarInfo> list = MessageStore.getBossBars();
         for (int i = list.size() - 1; i >= 0; i--) {
-            MessageStore.BoosBarInfo info = list.get(i);
-            BossBar bar = info.bar();
-            if (System.currentTimeMillis() >= info.endTime()) {
+            MessageStore.BossBarInfo info = list.get(i);
+            BossBar bar = info.getBar();
+            int tick = info.getTick();
+            if (tick == info.getMaxTick()) {
                 bar.removeAll();
                 list.remove(i);
-            } else
-                bar.setProgress(1 - (System.currentTimeMillis() - info.startTime()) * 1.0D / (info.endTime() - info.startTime()));
+            } else {
+                tick++;
+                info.setTick(tick);
+                if (info.isReverse())
+                    bar.setProgress(1 - tick * 1.0D / info.getMaxTick());
+                else
+                    bar.setProgress(1 - (info.getMaxTick() - tick) * 1.0D / info.getMaxTick());
+            }
         }
         for (World world : Bukkit.getWorlds())
             for (Entity entity : world.getEntities())
@@ -65,12 +72,12 @@ public class MessageListener extends AbstractEventListener {
     @EventHandler
     public void Events(PlayerJoinEvent e) {
         Player player = e.getPlayer();
-        for (MessageStore.BoosBarInfo info : MessageStore.getBossBars())
-            if (info.every()) {
-                if (info.predicate() == null || info.predicate().test(player)) info.bar().addPlayer(player);
+        for (MessageStore.BossBarInfo info : MessageStore.getBossBars())
+            if (info.isEvery()) {
+                if (info.getPredicate() == null || info.getPredicate().test(player)) info.getBar().addPlayer(player);
             } else {
-                BossBar bar = info.bar();
-                if (info.players().contains(player.getUniqueId())) bar.addPlayer(player);
+                BossBar bar = info.getBar();
+                if (info.getPlayers().contains(player.getUniqueId())) bar.addPlayer(player);
             }
     }
 

@@ -86,6 +86,9 @@ public abstract class AbstractCommand implements CommandExecutor, TabCompleter {
         new ItemCommand();
         new WorldMoveCommand();
         new SpawnCommand();
+        new CharacterCommand();
+        new UpgradeCommand();
+        new MoneyCommand();
     }
 
 }

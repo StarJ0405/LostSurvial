@@ -13,19 +13,18 @@ public class PlayerMoney extends AbstractTableInstance {
 
     public PlayerMoney setMoney() throws SQLException {
         if (conn == null) return this;
-        try (PreparedStatement statement = conn.prepareStatement("SELECT * FROM " + this.getClass().getSimpleName())) {
+        try (PreparedStatement statement = conn.prepareStatement("SELECT * FROM " + this.getClass().getSimpleName() + " WHERE player_name='" + player_name + "'")) {
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
-                long money = rs.getLong("money");
                 rs.close();
-                try (PreparedStatement statement1 = conn.prepareStatement("UPDATE " + this.getClass().getSimpleName() + " SET money = " + this.money + " WHERE  player_name='" + player_name + "'")) {
+                try (PreparedStatement statement1 = conn.prepareStatement("UPDATE " + this.getClass().getSimpleName() + " SET money = " + Math.max(0, this.money) + " WHERE  player_name='" + player_name + "'")) {
                     statement1.executeUpdate();
                 }
                 return this;
             }
             rs.close();
         }
-        try (PreparedStatement statement = conn.prepareStatement("INSERT INTO " + this.getClass().getSimpleName() + " (player_name, money) values ('" + player_name + "'," + money + ")")) {
+        try (PreparedStatement statement = conn.prepareStatement("INSERT INTO " + this.getClass().getSimpleName() + " (player_name, money) values ('" + player_name + "'," + Math.max(0, this.money) + ")")) {
             statement.executeUpdate();
         }
         return this;
@@ -33,7 +32,7 @@ public class PlayerMoney extends AbstractTableInstance {
 
     public PlayerMoney addMoney() throws SQLException {
         if (conn == null) return this;
-        try (PreparedStatement statement = conn.prepareStatement("SELECT * FROM " + this.getClass().getSimpleName())) {
+        try (PreparedStatement statement = conn.prepareStatement("SELECT * FROM " + this.getClass().getSimpleName() + " WHERE player_name='" + player_name + "'")) {
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                 long money = rs.getLong("money");
@@ -45,7 +44,27 @@ public class PlayerMoney extends AbstractTableInstance {
             }
             rs.close();
         }
-        try (PreparedStatement statement = conn.prepareStatement("INSERT INTO " + this.getClass().getSimpleName() + " (player_name, money) values ('" + player_name + "'," + money + ")")) {
+        try (PreparedStatement statement = conn.prepareStatement("INSERT INTO " + this.getClass().getSimpleName() + " (player_name, money) values ('" + player_name + "'," + Math.max(0, this.money) + ")")) {
+            statement.executeUpdate();
+        }
+        return this;
+    }
+
+    public PlayerMoney removeMoney() throws SQLException {
+        if (conn == null) return this;
+        try (PreparedStatement statement = conn.prepareStatement("SELECT * FROM " + this.getClass().getSimpleName() + " WHERE player_name='" + player_name + "'")) {
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                long money = rs.getLong("money");
+                rs.close();
+                try (PreparedStatement statement1 = conn.prepareStatement("UPDATE " + this.getClass().getSimpleName() + " SET money = " + Math.max(money - this.money, 0) + " WHERE  player_name='" + player_name + "'")) {
+                    statement1.executeUpdate();
+                }
+                return this;
+            }
+            rs.close();
+        }
+        try (PreparedStatement statement = conn.prepareStatement("INSERT INTO " + this.getClass().getSimpleName() + " (player_name, money) values ('" + player_name + "'," + 0 + ")")) {
             statement.executeUpdate();
         }
         return this;
@@ -53,7 +72,7 @@ public class PlayerMoney extends AbstractTableInstance {
 
     public Long getMoney() throws SQLException {
         if (conn == null) return null;
-        try (PreparedStatement statement = conn.prepareStatement("SELECT * FROM " + this.getClass().getSimpleName())) {
+        try (PreparedStatement statement = conn.prepareStatement("SELECT * FROM " + this.getClass().getSimpleName() + " WHERE player_name='" + player_name + "'")) {
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                 long money = rs.getLong("money");

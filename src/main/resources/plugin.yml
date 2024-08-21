@@ -9,7 +9,7 @@ commands:
   item:
     description: "전용 아이템을 제공하는 명령어"
     usage: "/item [player] [item] (count)"
-    aliases: [i]
+    aliases: [ i ]
     operator: admin
   sudo:
     description: "명령어를 강제로 시키는 명령어"
@@ -18,18 +18,32 @@ commands:
   permission:
     description: "퍼미션 명령어"
     usage: "/permission [player] add [permission] (ticks)\n/permission [player] remove [permission]"
-    aliases: [p]
+    aliases: [ p ]
     operator: admin
   worldmove:
     description: "웓드 이동 명령어"
-    usage : "/wm [player] [world_name]"
-    aliases: [wm]
+    usage: "/wm [player] [world_name]"
+    aliases: [ wm ]
     operator: admin
   spawn:
     description: "커스텀 몬스터 소환 명령어"
     usage: "/s [type]\n/s [type] [world] [x] [y] [z]"
-    aliases: [s]
+    aliases: [ s ]
     operator: admin
+  character:
+    description: "직업 명렁어"
+    usage: "/ch [player]\n/ch [player] info [type]\n/ch [player] set [type]"
+    aliases: [ ch ]
+    operator: admin
+  upgrade:
+    description: "업그레이드 명렁어"
+    usage: "/up [player]\n/up [player] reset\n/up [player] set [type] [level]\n/up [player] add [type] [level]\n/up [player] remove [type] [level]"
+    aliases: [ up ]
+  money:
+    description: "돈 명령어"
+    #/m [player] set [money]\n/m [player] give [money]\n/m [player] remove [money]
+    usage: "/m - 돈 목록\n/m [player] - 해당 유저 돈"
+    aliases: [ m ]
 libraries:
   - 'com.h2database:h2:2.2.220'
 preset:

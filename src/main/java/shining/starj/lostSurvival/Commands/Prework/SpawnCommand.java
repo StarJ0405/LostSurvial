@@ -44,7 +44,7 @@ public class SpawnCommand extends AbstractCommand {
     private static class Line2 extends AbstractCommandLine {
 
         public Line2() {
-            super(SenderType.ops(), 4);
+            super(SenderType.ops(), 5);
         }
 
         @Override

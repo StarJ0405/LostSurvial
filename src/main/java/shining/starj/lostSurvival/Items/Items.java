@@ -20,6 +20,8 @@ public class Items {
     // 기타
     public final static Items timer = Items.builder().key("timer").displayName(ChatColor.WHITE + "타이머").material(Material.CLOCK).fireResistant(true).maxStackSize(60).build();
     public final static Items empty = Items.builder().key("empty").model(1).displayName(ChatColor.GRAY + "빈 슬롯").material(Material.GRAY_STAINED_GLASS_PANE).maxStackSize(1).build();
+    public final static Items select = Items.builder().key("select").model(1).displayName(ChatColor.GRAY + "선택").lores(new String[]{ChatColor.WHITE + "클릭시 직업으로 선택합니다."}).material(Material.GREEN_STAINED_GLASS_PANE).maxStackSize(1).build();
+    public final static Items cancel = Items.builder().key("cancel").model(1).displayName(ChatColor.GRAY + "취소").material(Material.RED_STAINED_GLASS_PANE).maxStackSize(1).build();
     //
     protected static final NamespacedKey typeNamespaceKey = new NamespacedKey(Core.getCore(), "itemType");
     protected final String key;

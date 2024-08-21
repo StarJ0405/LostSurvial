@@ -1,7 +1,7 @@
 package shining.starj.lostSurvival.GUIs;
 
 public enum InventorySize {
-    One, Two, Three
+    One, Two, Three, Four, Five, Six
     //
     ;
 

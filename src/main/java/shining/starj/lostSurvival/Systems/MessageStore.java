@@ -2,6 +2,7 @@ package shining.starj.lostSurvival.Systems;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.*;
 import net.md_5.bungee.api.chat.hover.content.Item;
@@ -29,7 +30,7 @@ import java.util.function.Predicate;
 
 public class MessageStore {
     @Getter
-    private final static List<BoosBarInfo> bossBars = new ArrayList<>();
+    private final static List<BossBarInfo> bossBars = new ArrayList<>();
     @Getter
     private final static MessageStore messageStore = new MessageStore();
     @Getter
@@ -417,7 +418,7 @@ public class MessageStore {
         return sendTitleMessage(player, main, sub, fadeInSecond, durationSeconds, fadeOutSeconds, 0);
     }
 
-    public MessageStore sendBroadcastBossBar(double delaySeconds, double durationSeconds, String title, BarColor barColor, BarStyle barStyle, Predicate<Player> predicate, BarFlag... flags) {
+    public MessageStore sendBroadcastBossBar(boolean reverse, double delaySeconds, double durationSeconds, String title, BarColor barColor, BarStyle barStyle, Predicate<Player> predicate, BarFlag... flags) {
         if (delaySeconds > 0) Bukkit.getScheduler().runTaskLater(Core.getCore(), () -> {
             List<UUID> list = new ArrayList<>();
             BossBar bar = Bukkit.createBossBar(title, barColor, barStyle, flags);
@@ -429,7 +430,7 @@ public class MessageStore {
                         list.add(player.getUniqueId());
                         bar.addPlayer(player);
                     }
-            bossBars.add(BoosBarInfo.builder().bar(bar).startTime(System.currentTimeMillis()).endTime(System.currentTimeMillis() + ((long) durationSeconds * 1000L)).players(list).predicate(predicate).build());
+            bossBars.add(BossBarInfo.builder().bar(bar).maxTick((int) (durationSeconds * 4)).players(list).predicate(predicate).reverse(reverse).build());
         }, (int) Math.floor(delaySeconds * Bukkit.getServerTickManager().getTickRate()));
         else {
             List<UUID> list = new ArrayList<>();
@@ -442,43 +443,43 @@ public class MessageStore {
                         list.add(player.getUniqueId());
                         bar.addPlayer(player);
                     }
-            bossBars.add(BoosBarInfo.builder().bar(bar).startTime(System.currentTimeMillis()).endTime(System.currentTimeMillis() + ((long) durationSeconds * 1000L)).players(list).predicate(predicate).build());
+            bossBars.add(BossBarInfo.builder().bar(bar).maxTick((int) (durationSeconds * 4)).players(list).predicate(predicate).reverse(reverse).build());
         }
         return this;
     }
 
-    public MessageStore sendBroadcastBossBar(double delaySeconds, double durationSeconds, String title, BarColor barColor, BarStyle barStyle, BarFlag... flags) {
-        return sendBroadcastBossBar(delaySeconds, durationSeconds, title, barColor, barStyle, null, flags);
+    public MessageStore sendBroadcastBossBar(boolean reverse, double delaySeconds, double durationSeconds, String title, BarColor barColor, BarStyle barStyle, BarFlag... flags) {
+        return sendBroadcastBossBar(reverse, delaySeconds, durationSeconds, title, barColor, barStyle, null, flags);
     }
 
-    public MessageStore sendBroadcastBossBar(double durationSeconds, String title, BarColor barColor, BarStyle barStyle, Predicate<Player> predicate, BarFlag... flags) {
-        return sendBroadcastBossBar(0, durationSeconds, title, barColor, barStyle, predicate, flags);
+    public MessageStore sendBroadcastBossBar(boolean reverse, double durationSeconds, String title, BarColor barColor, BarStyle barStyle, Predicate<Player> predicate, BarFlag... flags) {
+        return sendBroadcastBossBar(reverse, 0, durationSeconds, title, barColor, barStyle, predicate, flags);
     }
 
-    public MessageStore sendBroadcastBossBar(double durationSeconds, String title, BarColor barColor, BarStyle barStyle, BarFlag... flags) {
-        return sendBroadcastBossBar(0, durationSeconds, title, barColor, barStyle, null, flags);
+    public MessageStore sendBroadcastBossBar(boolean reverse, double durationSeconds, String title, BarColor barColor, BarStyle barStyle, BarFlag... flags) {
+        return sendBroadcastBossBar(reverse, 0, durationSeconds, title, barColor, barStyle, null, flags);
     }
 
-    public MessageStore sendBossBar(Player player, double delaySeconds, double durationSeconds, String title, BarColor barColor, BarStyle barStyle, BarFlag... flags) {
+    public MessageStore sendBossBar(boolean reverse, Player player, double delaySeconds, double durationSeconds, String title, BarColor barColor, BarStyle barStyle, BarFlag... flags) {
         if (delaySeconds > 0) Bukkit.getScheduler().runTaskLater(Core.getCore(), () -> {
             BossBar bar = Bukkit.createBossBar(title, barColor, barStyle, flags);
             bar.addPlayer(player);
             bar.setProgress(1d);
             bar.setVisible(true);
-            bossBars.add(BoosBarInfo.builder().bar(bar).startTime(System.currentTimeMillis()).endTime(System.currentTimeMillis() + ((long) durationSeconds * 1000L)).players(Arrays.stream(new UUID[]{player.getUniqueId()}).toList()).build());
+            bossBars.add(BossBarInfo.builder().bar(bar).maxTick((int) (durationSeconds * 4)).players(Arrays.stream(new UUID[]{player.getUniqueId()}).toList()).reverse(reverse).build());
         }, (int) Math.floor(delaySeconds * Bukkit.getServerTickManager().getTickRate()));
         else {
             BossBar bar = Bukkit.createBossBar(title, barColor, barStyle, flags);
             bar.addPlayer(player);
             bar.setProgress(1d);
             bar.setVisible(true);
-            bossBars.add(BoosBarInfo.builder().bar(bar).startTime(System.currentTimeMillis()).endTime(System.currentTimeMillis() + ((long) durationSeconds * 1000L)).players(Arrays.stream(new UUID[]{player.getUniqueId()}).toList()).build());
+            bossBars.add(BossBarInfo.builder().bar(bar).maxTick((int) (durationSeconds * 4)).players(Arrays.stream(new UUID[]{player.getUniqueId()}).toList()).reverse(reverse).build());
         }
         return this;
     }
 
-    public MessageStore sendBossBar(Player player, double durationSeconds, String title, BarColor barColor, BarStyle barStyle, BarFlag... flags) {
-        return sendBossBar(player, 0, durationSeconds, title, barColor, barStyle, flags);
+    public MessageStore sendBossBar(boolean reverse, Player player, double durationSeconds, String title, BarColor barColor, BarStyle barStyle, BarFlag... flags) {
+        return sendBossBar(reverse, player, 0, durationSeconds, title, barColor, barStyle, flags);
     }
 
     public MessageStore sendTextDisplay(Location loc, String msg, double delaySeconds, double durationSeconds, byte textOpacity, TextDisplay.TextAlignment alignment, int width, float height, Color bgColor, boolean defaultBackground, boolean seeThrough, boolean shadowed) {
@@ -593,10 +594,29 @@ public class MessageStore {
         return sendActionbar(player, 0, msg, 0);
     }
 
-    @Builder
-    public record BoosBarInfo(BossBar bar, Long startTime, Long endTime, List<UUID> players, boolean every,
-                              Predicate<Player> predicate) {
+    @Getter
+    @Setter
+    public static class BossBarInfo {
+        private final BossBar bar;
+        private int tick;
+        private final int maxTick;
+        private final List<UUID> players;
+        private final boolean every;
+        private final Predicate<Player> predicate;
+        private final boolean reverse;
+
+        @Builder
+        public BossBarInfo(BossBar bar, int maxTick, List<UUID> players, boolean every, Predicate<Player> predicate, boolean reverse) {
+            this.bar = bar;
+            this.tick = 0;
+            this.maxTick = maxTick;
+            this.players = players;
+            this.every = every;
+            this.predicate = predicate;
+            this.reverse = reverse;
+        }
     }
+
 
     @Builder
     public record ActionBarInfo(String msg, Long endTime, List<UUID> players, boolean every,

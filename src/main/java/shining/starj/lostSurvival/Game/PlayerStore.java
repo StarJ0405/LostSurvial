@@ -11,7 +11,8 @@ import org.bukkit.inventory.Inventory;
 import shining.starj.lostSurvival.Atrributes.Attributes;
 import shining.starj.lostSurvival.Buffs.AbstractBuff;
 import shining.starj.lostSurvival.Entities.CustomEntities;
-import shining.starj.lostSurvival.Entities.Prework.DeadBody;
+import shining.starj.lostSurvival.Entities.User.DeadBody;
+import shining.starj.lostSurvival.Game.Skills.AbstractCharacterSkill;
 import shining.starj.lostSurvival.Game.Skills.AbstractSkill;
 import shining.starj.lostSurvival.Game.Skills.SkillInfo;
 import shining.starj.lostSurvival.Items.Items;
@@ -28,13 +29,11 @@ public class PlayerStore {
     private final Player player;
     private Character character;
     private double health;
-    private int level;
-    private int exp;
-    private SkillInfo identity;
-    private SkillInfo ultimate;
+    private AbstractSkill identity;
+    private AbstractSkill ultimate;
     private final SkillInfo[] skillInfos;
     private final UpgradeInfo[] upgrades;
-    private int choice;
+    private int engraving;
     private final HashMap<String, Double> reduces;
     @Setter
     private boolean invulnerable;
@@ -45,11 +44,11 @@ public class PlayerStore {
         this.health = 20d;
         this.skillInfos = new SkillInfo[5];
         this.upgrades = new UpgradeInfo[6];
-        this.choice = 0;
+        this.engraving = 0;
         this.reduces = new HashMap<>();
         this.isDying = false;
-        setLevel(0);
-        setExp(0);
+        player.setLevel(0);
+        player.setExp(0f);
     }
 
     public void sendActionBar() {
@@ -57,59 +56,95 @@ public class PlayerStore {
     }
 
     public void setCharacter(Character character) {
+        player.getInventory().setHeldItemSlot(0);
         if (character == null) {
             reset();
             return;
         }
+        GameStore gameStore = GameStore.getInstance();
         this.character = character;
-        if (GameStore.getInstance().getStatus().equals(GameStatus.END)) {
-            heal(character.getMaxHealth());
-            setLevel(0);
-            setExp(0);
+        if (gameStore.getStatus().equals(GameStatus.END)) {
+            heal(getMaxHealth());
+            player.setLevel(0);
+            player.setExp(0f);
         } else {
-            setLevel(level);
-            setExp(exp);
+            player.setLevel(gameStore.getLevel());
+            player.setExp(gameStore.getExp() * 1f / gameStore.getNeedExp());
         }
-        Attributes.builder().attribute(Attribute.GENERIC_MOVEMENT_SPEED).amount(character.getMoveSpeed()).build().apply(player);
+        Attributes.builder().attribute(Attribute.GENERIC_MOVEMENT_SPEED).amount(getMoveSpeed()).build().apply(player);
         Attributes.builder().attribute(Attribute.GENERIC_ATTACK_DAMAGE).amount(0).build().apply(player);
         this.skillInfos[0] = SkillInfo.builder().skill(character.getBasic()).build();
         Inventory inv = player.getInventory();
         inv.clear();
-        if (GameStore.getInstance().getStatus().equals(GameStatus.END)) this.choice = 0;
+        if (gameStore.getStatus().equals(GameStatus.END)) this.engraving = 0;
         if (character.getBasic() != null) inv.setItem(0, skillInfos[0].getItemStack());
         for (int i = 1; i < skillInfos.length; i++)
             inv.setItem(i, Items.empty.getItemStack());
+        for (int i = 0; i < upgrades.length; i++)
+            inv.setItem(i + 9 * 3, Items.empty.getItemStack());
         if (character.getPassive() != null) inv.setItem(6, character.getPassive().getItemStack(0));
-        switch (choice) {
+        updateItem();
+        player.setFoodLevel(19);
+    }
+
+    public void updateItem() {
+        Inventory inv = player.getInventory();
+        int level = GameStore.getInstance().getLevel();
+        switch (engraving) {
             case 1 -> {
-                if (character.getIdentity1() != null) {
-                    this.identity = SkillInfo.builder().skill(character.getIdentity1()).build();
-                    inv.setItem(7, this.identity.getItemStack());
+                AbstractCharacterSkill.Engraving engraving = character.getEngraving1();
+                if (engraving != null) {
+                    if (engraving.getIdentity() != null) {
+                        this.identity = engraving.getIdentity();
+                        inv.setItem(7, this.identity.getItemStack(level, false));
+                    } else
+                        inv.setItem(7, Items.empty.getItemStack());
+                    if (engraving.getUltimate() != null) {
+                        this.ultimate = engraving.getUltimate();
+                        inv.setItem(8, this.ultimate.getItemStack(level, false));
+                    } else
+                        inv.setItem(8, Items.empty.getItemStack());
+                    inv.setItem(8 + 9 * 3, engraving.getChoice());
                 }
-                inv.setItem(8, Items.empty.getItemStack());
+
             }
             case 2 -> {
-                if (character.getIdentity2() != null) {
-                    this.identity = SkillInfo.builder().skill(character.getIdentity2()).build();
-                    inv.setItem(7, this.identity.getItemStack());
-                }
-                if (character.getUltimate1() != null) {
-                    this.ultimate = SkillInfo.builder().skill(character.getUltimate1()).build();
-                    inv.setItem(8, ultimate.getItemStack());
+                AbstractCharacterSkill.Engraving engraving = character.getEngraving2();
+                if (engraving != null) {
+                    if (engraving.getPassive() != null)
+                        inv.setItem(6, engraving.getPassive().getItemStack(level));
+                    else
+                        inv.setItem(6, Items.empty.getItemStack());
+                    if (engraving.getIdentity() != null) {
+                        this.identity = engraving.getIdentity();
+                        inv.setItem(7, this.identity.getItemStack(level, false));
+                    } else
+                        inv.setItem(7, Items.empty.getItemStack());
+                    if (engraving.getUltimate() != null) {
+                        this.ultimate = engraving.getUltimate();
+                        inv.setItem(8, ultimate.getItemStack(level, false));
+                    } else
+                        inv.setItem(8, Items.empty.getItemStack());
+                    inv.setItem(8 + 9 * 3, engraving.getChoice());
                 }
             }
             default -> {
-                if (character.getIdentity0() != null) {
-                    this.identity = SkillInfo.builder().skill(character.getIdentity0()).build();
-                    inv.setItem(7, this.identity.getItemStack());
-                }
-                if (character.getUltimate2() != null) {
-                    this.ultimate = SkillInfo.builder().skill(character.getUltimate1()).build();
-                    inv.setItem(8, ultimate.getItemStack());
-                }
+                if (character.getPassive() != null)
+                    inv.setItem(6, character.getPassive().getItemStack(level));
+                else
+                    inv.setItem(6, Items.empty.getItemStack());
+                if (level >= 3)
+                    if (character.getIdentity() != null) {
+                        this.identity = character.getIdentity();
+                        inv.setItem(7, this.identity.getItemStack(level, false));
+                    } else
+                        inv.setItem(7, Items.empty.getItemStack());
+                else
+                    inv.setItem(7, Items.empty.getItemStack());
+                inv.setItem(8, Items.empty.getItemStack());
+                inv.setItem(8 + 9 * 3, Items.empty.getItemStack());
             }
         }
-        player.setFoodLevel(19);
     }
 
     public void kill() {
@@ -135,12 +170,13 @@ public class PlayerStore {
     public void damage(double damage) {
         if (damage <= 0 || invulnerable || isDying) return;
         player.sendHurtAnimation(0f);
-        player.setNoDamageTicks(20);
+        player.playSound(player, Sound.ENTITY_PLAYER_HURT, 1f, 1f);
+        player.setNoDamageTicks(12);
         this.health -= damage * getReduces();
         if (health <= 0) die();
         else {
             double maxHealth = getMaxHealth();
-            player.setHealth(Math.floor(Math.max(1, health / maxHealth * 20d)));
+            player.setHealth(Math.min(health < maxHealth ? 19 : 20, Math.max(1, health / maxHealth * 20d)));
             sendActionBar();
         }
     }
@@ -149,32 +185,44 @@ public class PlayerStore {
         if (heal <= 0 || isDying) return;
         this.health = Math.min(getMaxHealth(), this.health + heal);
         double maxHealth = getMaxHealth();
-        player.setHealth(Math.max(1, health / maxHealth * 20d));
+        player.setHealth(Math.min(health < maxHealth ? 19 : 20, Math.max(1, health / maxHealth * 20d)));
         sendActionBar();
     }
 
     public void setUpgrade(Upgrade upgrade) {
         int i = 0;
-        for (; i < upgrades.length; i++)
-            if (upgrades[i] == null) break;
-            else if (upgrades[i].getUpgrade().equals(upgrade)) {
-                upgrades[i].setLevel(upgrades[i].getLevel() + 1);
+        for (; i < upgrades.length; i++) {
+            UpgradeInfo info = upgrades[i];
+            if (info == null) break;
+            else if (info.getUpgrade().equals(upgrade)) {
+                int level = info.getLevel() + 1;
+                info.setLevel(level);
+                info.getUpgrade().apply(player, level);
+                player.getInventory().setItem(i + 9 * 3, info.getItemStack());
                 return;
             }
+        }
         if (i != upgrades.length - 1 && upgrades[i] != null) return;
         upgrades[i] = UpgradeInfo.builder().upgrade(upgrade).build();
+        upgrade.apply(player, 1);
         for (i = 0; i < upgrades.length; i++)
-            if (upgrades[i] != null) player.getInventory().setItem(i + 9, upgrades[i].getItemStack());
+            if (upgrades[i] != null) player.getInventory().setItem(i + 9 * 3, upgrades[i].getItemStack());
     }
 
     public void setSkill(AbstractSkill skill) {
         int i = 0;
-        for (; i < skillInfos.length; i++)
-            if (skillInfos[i] == null) break;
-            else if (skillInfos[i].getSkill().equals(skill)) {
-                skillInfos[i].setLevel(skillInfos[i].getLevel() + 1);
+        for (; i < skillInfos.length; i++) {
+            SkillInfo info = skillInfos[i];
+            if (info == null) break;
+            else if (info.getSkill().equals(skill)) {
+                if (info.getLevel() == info.getSkill().getMaxLevel())
+                    info.setUpgraded(true);
+                else
+                    info.setLevel(info.getLevel() + 1);
+                player.getInventory().setItem(i, info.getItemStack());
                 return;
             }
+        }
         if (i >= skillInfos.length) return;
         if (i != skillInfos.length - 1 && skillInfos[i] != null) return;
         skillInfos[i] = SkillInfo.builder().skill(skill).build();
@@ -182,23 +230,9 @@ public class PlayerStore {
             if (skillInfos[i] != null) player.getInventory().setItem(i, skillInfos[i].getItemStack());
     }
 
-    public void setLevel(int level) {
-        this.level = level;
-        player.setLevel(level);
-    }
-
-    public int getNeedExp() {
-        return (level + 1) * (level + 1) * 60;
-    }
-
-    public void setExp(int exp) {
-        while (exp >= getNeedExp()) {
-            exp -= getNeedExp();
-            setLevel(this.level + 1);
-            player.getWorld().playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
-        }
-        this.exp = exp;
-        player.setExp(exp * 1f / getNeedExp());
+    public void setEngraving(int engraving) {
+        this.engraving = engraving;
+        updateItem();
     }
 
     /*
@@ -258,8 +292,18 @@ public class PlayerStore {
 
         for (UpgradeInfo info : upgrades)
             if (info != null && info.getUpgrade().equals(upgrade))
-                return character.getMaxHealth() + info.getValue() + defaultUpgrade;
-        return character.getMaxHealth() + defaultUpgrade;
+                return (character.getMaxHealth() + info.getValue()) * (1d + defaultUpgrade);
+        return character.getMaxHealth() * (1d + defaultUpgrade);
+    }
+
+    public double getMaxHealthUp(double health) {
+        Upgrade upgrade = Upgrade.MAX_HEALTH;
+        double defaultUpgrade = upgrade.getDefaultValue(player);
+
+        for (UpgradeInfo info : upgrades)
+            if (info != null && info.getUpgrade().equals(upgrade))
+                return (health + info.getValue()) * (1d + defaultUpgrade);
+        return health * (1d + defaultUpgrade);
     }
 
     public double getArmor() {
@@ -276,8 +320,8 @@ public class PlayerStore {
         double defaultUpgrade = upgrade.getDefaultValue(player);
 
         for (UpgradeInfo info : upgrades)
-            if (info != null && info.getUpgrade().equals(upgrade)) return info.getValue() + defaultUpgrade;
-        return defaultUpgrade;
+            if (info != null && info.getUpgrade().equals(upgrade)) return 1 + info.getValue() + defaultUpgrade;
+        return 1 + defaultUpgrade;
     }
 
     public double getArea() {
@@ -312,8 +356,8 @@ public class PlayerStore {
         double defaultUpgrade = upgrade.getDefaultValue(player);
 
         for (UpgradeInfo info : upgrades)
-            if (info != null && info.getUpgrade().equals(upgrade)) return 1d + info.getValue() + defaultUpgrade;
-        return 1d + defaultUpgrade;
+            if (info != null && info.getUpgrade().equals(upgrade)) return info.getValue() + defaultUpgrade;
+        return defaultUpgrade;
     }
 
     /*
@@ -350,11 +394,11 @@ public class PlayerStore {
         Arrays.fill(upgrades, null);
         new Attributes(Attribute.GENERIC_MOVEMENT_SPEED, 0.1f).apply(player);
         Attributes.builder().attribute(Attribute.GENERIC_ATTACK_DAMAGE).amount(1d).build().apply(player);
-        setExp(0);
-        setLevel(0);
+        player.setExp(0);
+        player.setLevel(0);
         player.setInvisible(false);
         invulnerable = false;
-        this.choice = 0;
+        this.engraving = 0;
         this.isDying = false;
         Location loc = Bukkit.getWorld("world").getSpawnLocation();
         player.teleport(loc);

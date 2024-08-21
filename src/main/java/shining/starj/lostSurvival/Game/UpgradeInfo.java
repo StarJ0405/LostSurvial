@@ -27,7 +27,15 @@ public class UpgradeInfo {
         return upgrade.getItemStack(level);
     }
 
+    public ItemStack getUpgradeItemStack() {
+        return upgrade.getUpgradeItemStack(level);
+    }
+
     public ItemStack getDefaultItemStack() {
         return upgrade.getDefaultItemStack(level);
+    }
+
+    public ItemStack getUpgradeDefaultItemStack() {
+        return upgrade.getUpgradeDefaultItemStack(level);
     }
 }

@@ -13,11 +13,15 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import shining.starj.lostSurvival.Core;
-import shining.starj.lostSurvival.Entities.Prework.*;
+import shining.starj.lostSurvival.Entities.Monster.Minion;
+import shining.starj.lostSurvival.Entities.User.*;
+import shining.starj.lostSurvival.Game.GameStatus;
+import shining.starj.lostSurvival.Game.GameStore;
 import shining.starj.lostSurvival.Game.PlayerStore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 @Getter
 public abstract class CustomEntities {
@@ -29,12 +33,15 @@ public abstract class CustomEntities {
         list.add(this);
     }
 
+    // 플레이어용
     public static final Scarecrow SCARECROW = new Scarecrow();
     public static final Puppet PUPPET = new Puppet();
     public static final Shadow SHADOW = new Shadow();
     public static final DeadBody DEAD_BODY = new DeadBody();
     public static final Money MONEY = new Money();
     public static final Exp EXP = new Exp();
+    // 몬스터
+    public static final Minion MINION = new Minion();
 
     // 소환 명령어 엔티티를 반환
     public abstract Entity spawn(@NotNull Location loc);
@@ -42,17 +49,14 @@ public abstract class CustomEntities {
     public abstract Entity renew(Entity pre);
 
     public static CustomEntities valueOf(Entity entity) {
-        if (entity.hasMetadata("key"))
-            for (MetadataValue value : entity.getMetadata("key"))
-                if (value.getOwningPlugin().equals(Core.getCore()))
-                    return valueOf(value.asString());
+        if (entity.hasMetadata("key")) for (MetadataValue value : entity.getMetadata("key"))
+            if (value.getOwningPlugin().equals(Core.getCore())) return valueOf(value.asString());
         return null;
     }
 
     public static CustomEntities valueOf(String name) {
         for (CustomEntities entities : list)
-            if (entities.name.equals(name))
-                return entities;
+            if (entities.name.equals(name)) return entities;
         return null;
     }
 
@@ -77,6 +81,15 @@ public abstract class CustomEntities {
 
     public static boolean isNpc(Entity entity) {
         return entity.getPersistentDataContainer().has(new NamespacedKey(Core.getCore(), "npc"));
+    }
+
+    public static <T extends Entity> T setAttackAble(T entity) {
+        entity.getPersistentDataContainer().set(new NamespacedKey(Core.getCore(), "attack_able"), PersistentDataType.BOOLEAN, true);
+        return entity;
+    }
+
+    public static boolean isAttackAble(Entity entity) {
+        return entity.getPersistentDataContainer().has(new NamespacedKey(Core.getCore(), "attack_able"), PersistentDataType.BOOLEAN);
     }
 
     public static void damage(LivingEntity vic, Player att, double damage) {
@@ -107,7 +120,14 @@ public abstract class CustomEntities {
 
     public static void setStun(Entity pre, double seconds) {
         net.minecraft.world.entity.Entity entity = ((CraftEntity) pre).getHandle();
-        if (entity instanceof StunAble stunAble)
-            stunAble.setStun((int) (seconds * 20));
+        if (entity instanceof StunAble stunAble) stunAble.setStunTick((int) (seconds * 20));
+    }
+
+    public static Predicate<net.minecraft.world.entity.LivingEntity> getAttackAblePredicate() {
+        return livingEntity -> isAttackAble(livingEntity.getBukkitEntity());
+    }
+
+    public static Predicate<net.minecraft.world.entity.LivingEntity> getPlayerPredicate() {
+        return livingEntity -> livingEntity.getBukkitEntity() instanceof Player player && GameStore.getInstance().getStatus().equals(GameStatus.START) && !PlayerStore.getStore(player).isDead() && !PlayerStore.getStore(player).isInvulnerable() && !player.isInvisible();
     }
 }
